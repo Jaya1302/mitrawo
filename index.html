@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Mitra Vendor Wedding</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-stone-50 text-stone-800 min-h-screen">
+
+  <!-- ==================== HALAMAN LOGIN ==================== -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-rose-50 via-stone-50 to-amber-50">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-lg border border-stone-200 p-8">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 text-rose-800 mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-stone-900">Portal Mitra Vendor</h1>
+        <p class="text-sm text-stone-500 mt-1">Masuk untuk mengakses kontak, portofolio & pricelist khusus mitra WO</p>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-stone-700 mb-1">Username Mitra</label>
+          <input 
+            type="text" 
+            id="loginUsername" 
+            required 
+            placeholder="Masukkan username" 
+            class="w-full px-4 py-2.5 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+          >
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-stone-700 mb-1">Password</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="loginPassword" 
+              required 
+              placeholder="Masukkan password" 
+              class="w-full px-4 py-2.5 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 pr-16"
+            >
+            <button type="button" onclick="togglePassword()" id="togglePwdBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-stone-500 hover:text-stone-800">
+              Lihat
+            </button>
+          </div>
+        </div>
+
+        <p id="loginError" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2.5">
+          Username atau password salah. Silakan coba lagi.
+        </p>
+
+        <button type="submit" class="w-full bg-rose-800 hover:bg-rose-900 text-white py-3 rounded-xl font-semibold text-sm transition shadow-sm">
+          Masuk ke Database Mitra
+        </button>
+      </form>
+
+      <!-- Info Akun Demo (Hapus bagian ini jika sudah digunakan secara resmi) -->
+      <div class="mt-6 pt-5 border-t border-stone-100 text-xs text-stone-500 space-y-1 bg-stone-50 p-3 rounded-xl">
+        <p class="font-semibold text-stone-700">Akun Demo untuk Uji Coba:</p>
+        <p>• <strong>Admin WO:</strong> user <code class="bg-white px-1.5 py-0.5 rounded border">admin</code> / pass <code class="bg-white px-1.5 py-0.5 rounded border">adminwo123</code></p>
+        <p>• <strong>Mitra Vendor:</strong> user <code class="bg-white px-1.5 py-0.5 rounded border">mitra</code> / pass <code class="bg-white px-1.5 py-0.5 rounded border">mitra2026</code></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== HALAMAN UTAMA (SETELAH LOGIN) ==================== -->
+  <div id="appContainer" class="hidden">
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-30">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold text-rose-900">Portal Mitra Vendor WO</h1>
+            <span id="userRoleBadge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800"></span>
+          </div>
+          <p class="text-sm text-stone-500">Database kontak, portofolio & pricelist khusus sesama mitra</p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <!-- Tombol Tambah hanya tampil untuk Admin -->
+          <button id="btnAddVendor" onclick="openAddModal()" class="hidden bg-rose-800 hover:bg-rose-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+            + Tambah Mitra
+          </button>
+          <button onclick="handleLogout()" class="border border-stone-300 hover:bg-stone-100 text-stone-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+            Keluar
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+      
+      <!-- Search & Filter -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-200 mb-6 space-y-4">
+        <div class="flex flex-col md:flex-row gap-3">
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="renderVendors()"
+            placeholder="Cari nama vendor, kota, atau layanan..." 
+            class="flex-1 px-4 py-2.5 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+          >
+          <select id="cityFilter" onchange="renderVendors()" class="px-4 py-2.5 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-rose-500">
+            <option value="Semua">Semua Kota</option>
+          </select>
+        </div>
+
+        <!-- Kategori Pills -->
+        <div id="categoryFilters" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <!-- Grid Vendor -->
+      <div id="vendorGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden text-center py-12 bg-white rounded-xl border border-stone-200">
+        <p class="text-stone-500">Tidak ada mitra vendor yang sesuai dengan pencarian.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODAL DETAIL PORTOFOLIO & PRICELIST ==================== -->
+  <div id="detailModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+      <div class="p-6 border-b border-stone-200 flex justify-between items-start sticky top-0 bg-white">
+        <div>
+          <span id="modalCategory" class="text-xs font-semibold uppercase tracking-wider text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full"></span>
+          <h2 id="modalName" class="text-2xl font-bold mt-2 text-stone-900"></h2>
+          <p id="modalLocation" class="text-sm text-stone-500 mt-0.5"></p>
+        </div>
+        <button onclick="closeDetailModal()" class="text-stone-400 hover:text-stone-700 text-2xl leading-none">&times;</button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-stone-900 mb-2">Portofolio</h3>
+          <img id="modalImage" src="" alt="Portofolio" class="w-full h-56 object-cover rounded-xl mb-3 bg-stone-100">
+          <a id="modalPortfolioLink" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-sm font-medium text-rose-700 hover:underline">
+            Lihat Portofolio Lengkap (Instagram / GDrive) &rarr;
+          </a>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-stone-900 mb-2">List Harga (Pricelist Mitra)</h3>
+          <div id="modalPricelist" class="bg-stone-50 rounded-xl border border-stone-200 divide-y divide-stone-200"></div>
+          <p id="modalNotes" class="text-xs text-stone-500 mt-2 italic"></p>
+        </div>
+
+        <div class="pt-2 flex flex-col sm:flex-row gap-3">
+          <a id="modalWaBtn" href="#" target="_blank" rel="noopener noreferrer" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-center py-3 rounded-xl font-medium text-sm transition">
+            Hubungi via WhatsApp
+          </a>
+          <button onclick="closeDetailModal()" class="px-6 py-3 border border-stone-300 rounded-xl text-sm font-medium hover:bg-stone-50">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL TAMBAH VENDOR (KHUSUS ADMIN) ==================== -->
+  <div id="addModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-xl p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-stone-900">Tambah Mitra Vendor Baru</h2>
+        <button onclick="closeAddModal()" class="text-stone-400 hover:text-stone-700 text-2xl">&times;</button>
+      </div>
+      <form id="addVendorForm" onsubmit="saveNewVendor(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Nama Vendor</label>
+          <input type="text" id="inName" required placeholder="Contoh: Floria Decoration" class="w-full px-3 py-2 border rounded-lg text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium mb-1">Kategori</label>
+            <select id="inCategory" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+              <option value="Dekorasi">Dekorasi</option>
+              <option value="MUA & Attire">MUA & Attire</option>
+              <option value="Dokumentasi">Dokumentasi</option>
+              <option value="Catering">Catering</option>
+              <option value="MC & Entertainment">MC & Entertainment</option>
+              <option value="Venue">Venue</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Kota</label>
+            <input type="text" id="inCity" required placeholder="Jakarta" class="w-full px-3 py-2 border rounded-lg text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">No. WhatsApp (awali 62)</label>
+          <input type="text" id="inPhone" required placeholder="6281234567890" class="w-full px-3 py-2 border rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Link Portofolio (IG / GDrive)</label>
+          <input type="url" id="inPortfolio" required placeholder="https://instagram.com/..." class="w-full px-3 py-2 border rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Link Foto Cover (Opsional)</label>
+          <input type="url" id="inImage" placeholder="https://..." class="w-full px-3 py-2 border rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Harga Mulai (Tampilan Kartu)</label>
+          <input type="text" id="inStartPrice" required placeholder="Mulai Rp 15.000.000" class="w-full px-3 py-2 border rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Detail Paket & Harga (pisahkan dengan baris baru)</label>
+          <textarea id="inPrices" rows="3" required placeholder="Paket Akad : Rp 15.000.000&#10;Paket Resepsi : Rp 35.000.000" class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Catatan Mitra (Komisi / Diskon Vendor)</label>
+          <input type="text" id="inNotes" placeholder="Khusus sesama vendor diskon 10%" class="w-full px-3 py-2 border rounded-lg text-sm">
+        </div>
+        <button type="submit" class="w-full bg-rose-800 hover:bg-rose-900 text-white py-2.5 rounded-lg font-medium text-sm">
+          Simpan Vendor
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ==================== KONFIGURASI AKUN LOGIN ====================
+    // Anda dapat mengubah atau menambah akun mitra di daftar di bawah ini
+    const ACCOUNTS = [
+      { username: "admin", password: "adminwo123", name: "Admin WO", role: "admin" },
+      { username: "mitra", password: "mitra2026", name: "Mitra Vendor", role: "mitra" }
+    ];
+
+    // Data awal contoh mitra vendor
+    const defaultVendors = [
+      {
+        id: 1,
+        name: "Aruna Decor & Design",
+        category: "Dekorasi",
+        city: "Jakarta",
+        phone: "6281234567890",
+        portfolioUrl: "https://instagram.com",
+        image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=80",
+        startPrice: "Mulai Rp 25.000.000",
+        pricelist: [
+          { item: "Paket Intimate / Akad (Max 100 pax)", price: "Rp 25.000.000" },
+          { item: "Paket Ballroom Standard (Pelaminan 8m)", price: "Rp 45.000.000" },
+          { item: "Paket Custom Luxury", price: "Rp 85.000.000" }
+        ],
+        notes: "Harga di atas sudah termasuk fee mitra WO sebesar 10%."
+      },
+      {
+        id: 2,
+        name: "Lensa Senja Photography",
+        category: "Dokumentasi",
+        city: "Bandung",
+        phone: "6281298765432",
+        portfolioUrl: "https://instagram.com",
+        image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80",
+        startPrice: "Mulai Rp 8.500.000",
+        pricelist: [
+          { item: "Paket Akad Only (2 Fotografer + 1 Videografer)", price: "Rp 8.500.000" },
+          { item: "Full Day Wedding (Akad + Resepsi + SDE)", price: "Rp 16.000.000" },
+          { item: "Prewedding Outdoor", price: "Rp 5.500.000" }
+        ],
+        notes: "Gratis biaya transport untuk area Bandung Raya."
+      },
+      {
+        id: 3,
+        name: "Kinarasari Makeup & Attire",
+        category: "MUA & Attire",
+        city: "Jakarta",
+        phone: "6281122334455",
+        portfolioUrl: "https://instagram.com",
+        image: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=800&q=80",
+        startPrice: "Mulai Rp 12.000.000",
+        pricelist: [
+          { item: "Makeup Pengantin Akad + Resepsi + Busana", price: "Rp 12.000.000" },
+          { item: "Paket Lengkap (+ 2 Ibu & 4 Bridesmaid)", price: "Rp 18.500.000" }
+        ],
+        notes: "Diskon khusus mitra 15% untuk weekday wedding."
+      },
+      {
+        id: 4,
+        name: "Rasa Nusantara Catering",
+        category: "Catering",
+        city: "Surabaya",
+        phone: "6281333444555",
+        portfolioUrl: "https://instagram.com",
+        image: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=80",
+        startPrice: "Mulai Rp 135.000 / pax",
+        pricelist: [
+          { item: "Buffet Silver (Min. 300 pax)", price: "Rp 135.000 / pax" },
+          { item: "Buffet Gold + 4 Stall (Min. 500 pax)", price: "Rp 175.000 / pax" }
+        ],
+        notes: "Tersedia sesi test food gratis setiap hari Sabtu untuk klien WO."
+      }
+    ];
+
+    let vendors = JSON.parse(localStorage.getItem('wo_vendors')) || defaultVendors;
+    let activeCategory = 'Semua';
+    let currentUser = null;
+    const categories = ['Semua', 'Dekorasi', 'MUA & Attire', 'Dokumentasi', 'Catering', 'MC & Entertainment', 'Venue'];
+
+    // ==================== FUNGSI LOGIN & SESI ====================
+    function togglePassword() {
+      const pwdInput = document.getElementById('loginPassword');
+      const btn = document.getElementById('togglePwdBtn');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        btn.textContent = 'Sembunyikan';
+      } else {
+        pwdInput.type = 'password';
+        btn.textContent = 'Lihat';
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const userVal = document.getElementById('loginUsername').value.trim();
+      const passVal = document.getElementById('loginPassword').value;
+      const errBox = document.getElementById('loginError');
+
+      const found = ACCOUNTS.find(acc => acc.username === userVal && acc.password === passVal);
+      if (!found) {
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      errBox.classList.add('hidden');
+      const sessionData = { username: found.username, name: found.name, role: found.role };
+      sessionStorage.setItem('wo_session', JSON.stringify(sessionData));
+      document.getElementById('loginForm').reset();
+      checkAuth();
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('wo_session');
+      currentUser = null;
+      checkAuth();
+    }
+
+    function checkAuth() {
+      const saved = sessionStorage.getItem('wo_session');
+      const loginScreen = document.getElementById('loginScreen');
+      const appContainer = document.getElementById('appContainer');
+
+      if (!saved) {
+        loginScreen.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+        return;
+      }
+
+      currentUser = JSON.parse(saved);
+      loginScreen.classList.add('hidden');
+      appContainer.classList.remove('hidden');
+
+      // Atur tampilan berdasarkan role
+      document.getElementById('userRoleBadge').textContent = currentUser.name;
+      const btnAdd = document.getElementById('btnAddVendor');
+      if (currentUser.role === 'admin') {
+        btnAdd.classList.remove('hidden');
+      } else {
+        btnAdd.classList.add('hidden');
+      }
+
+      renderCityOptions();
+      renderCategories();
+      renderVendors();
+    }
+
+    // ==================== FUNGSI KEAMANAN & DATA ====================
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function safeUrl(url) {
+      if (!url) return '#';
+      return (url.startsWith('http://') || url.startsWith('https://')) ? url : '#';
+    }
+
+    function renderCityOptions() {
+      const select = document.getElementById('cityFilter');
+      const currentVal = select.value;
+      const uniqueCities = [...new Set(vendors.map(v => v.city.trim()))].sort();
+      select.innerHTML = '<option value="Semua">Semua Kota</option>' + 
+        uniqueCities.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      if (uniqueCities.includes(currentVal)) {
+        select.value = currentVal;
+      }
+    }
+
+    function renderCategories() {
+      const container = document.getElementById('categoryFilters');
+      container.innerHTML = categories.map(cat => `
+        <button 
+          onclick="setCategory('${cat}')"
+          class="px-3.5 py-1.5 rounded-full text-xs font-medium transition ${
+            activeCategory === cat 
+              ? 'bg-rose-800 text-white' 
+              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+          }">
+          ${cat}
+        </button>
+      `).join('');
+    }
+
+    function setCategory(cat) {
+      activeCategory = cat;
+      renderCategories();
+      renderVendors();
+    }
+
+    function renderVendors() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const city = document.getElementById('cityFilter').value;
+      const grid = document.getElementById('vendorGrid');
+      const empty = document.getElementById('emptyState');
+      const isAdmin = currentUser && currentUser.role === 'admin';
+
+      const filtered = vendors.filter(v => {
+        const matchCat = activeCategory === 'Semua' || v.category === activeCategory;
+        const matchCity = city === 'Semua' || v.city.toLowerCase() === city.toLowerCase();
+        const matchSearch = v.name.toLowerCase().includes(search) || 
+                            v.category.toLowerCase().includes(search) || 
+                            v.city.toLowerCase().includes(search);
+        return matchCat && matchCity && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      grid.innerHTML = filtered.map(v => `
+        <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
+          <div class="relative h-44 bg-stone-200">
+            <img src="${escapeHtml(safeUrl(v.image))}" alt="${escapeHtml(v.name)}" class="w-full h-full object-cover">
+            <span class="absolute top-3 left-3 bg-white/95 backdrop-blur px-2.5 py-1 rounded-full text-xs font-semibold text-rose-800 shadow-sm">
+              ${escapeHtml(v.category)}
+            </span>
+            ${isAdmin ? `
+              <button onclick="deleteVendor(${v.id})" title="Hapus Vendor" class="absolute top-3 right-3 bg-red-600/90 hover:bg-red-700 text-white px-2.5 py-1 rounded-full text-[11px] font-medium shadow-sm">
+                Hapus
+              </button>
+            ` : ''}
+          </div>
+          <div class="p-5 flex-1 flex flex-col">
+            <h3 class="font-bold text-lg text-stone-900 leading-snug">${escapeHtml(v.name)}</h3>
+            <p class="text-xs text-stone-500 mt-1">${escapeHtml(v.city)}</p>
+            <p class="text-sm font-semibold text-rose-800 mt-3">${escapeHtml(v.startPrice)}</p>
+            
+            <div class="mt-auto pt-4 flex gap-2">
+              <button onclick="openDetailModal(${v.id})" class="flex-1 bg-stone-900 hover:bg-stone-800 text-white py-2 px-3 rounded-lg text-xs font-medium transition">
+                Pricelist & Portofolio
+              </button>
+              <a href="https://wa.me/${escapeHtml(v.phone)}" target="_blank" rel="noopener noreferrer" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-3 rounded-lg text-xs font-medium transition flex items-center">
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openDetailModal(id) {
+      const v = vendors.find(item => item.id === id);
+      if (!v) return;
+
+      document.getElementById('modalCategory').textContent = v.category;
+      document.getElementById('modalName').textContent = v.name;
+      document.getElementById('modalLocation').textContent = `Area Layanan: ${v.city} • Kontak: +${v.phone}`;
+      document.getElementById('modalImage').src = safeUrl(v.image);
+      document.getElementById('modalPortfolioLink').href = safeUrl(v.portfolioUrl);
+      document.getElementById('modalNotes').textContent = v.notes ? `Catatan Mitra: ${v.notes}` : '';
+      document.getElementById('modalWaBtn').href = `https://wa.me/${v.phone}?text=Halo%20${encodeURIComponent(v.name)},%20kami%20dari%20mitra%20WO%20ingin%20menanyakan%20ketersediaan%20tanggal.`;
+
+      const priceContainer = document.getElementById('modalPricelist');
+      priceContainer.innerHTML = v.pricelist.map(p => `
+        <div class="flex justify-between items-center p-3 text-sm">
+          <span class="text-stone-700">${escapeHtml(p.item)}</span>
+          <span class="font-semibold text-stone-900 whitespace-nowrap ml-4">${escapeHtml(p.price)}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('detailModal').classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.add('hidden');
+    }
+
+    function openAddModal() {
+      document.getElementById('addModal').classList.remove('hidden');
+    }
+
+    function closeAddModal() {
+      document.getElementById('addModal').classList.add('hidden');
+    }
+
+    function saveNewVendor(e) {
+      e.preventDefault();
+      if (!currentUser || currentUser.role !== 'admin') return;
+
+      const rawPrices = document.getElementById('inPrices').value.split('\n').filter(line => line.trim() !== '');
+      const parsedPrices = rawPrices.map(line => {
+        const parts = line.split(':');
+        return {
+          item: parts[0] ? parts[0].trim() : line.trim(),
+          price: parts[1] ? parts[1].trim() : '-'
+        };
+      });
+
+      const customImg = document.getElementById('inImage').value.trim();
+
+      const newVendor = {
+        id: Date.now(),
+        name: document.getElementById('inName').value.trim(),
+        category: document.getElementById('inCategory').value,
+        city: document.getElementById('inCity').value.trim(),
+        phone: document.getElementById('inPhone').value.replace(/\D/g, ''),
+        portfolioUrl: document.getElementById('inPortfolio').value.trim(),
+        image: customImg || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80",
+        startPrice: document.getElementById('inStartPrice').value.trim(),
+        pricelist: parsedPrices,
+        notes: document.getElementById('inNotes').value.trim()
+      };
+
+      vendors.unshift(newVendor);
+      localStorage.setItem('wo_vendors', JSON.stringify(vendors));
+      document.getElementById('addVendorForm').reset();
+      closeAddModal();
+      renderCityOptions();
+      renderVendors();
+    }
+
+    function deleteVendor(id) {
+      if (!currentUser || currentUser.role !== 'admin') return;
+      if (!confirm('Yakin ingin menghapus mitra vendor ini?')) return;
+      vendors = vendors.filter(v => v.id !== id);
+      localStorage.setItem('wo_vendors', JSON.stringify(vendors));
+      renderCityOptions();
+      renderVendors();
+    }
+
+    // Jalankan pengecekan login saat halaman dibuka
+    checkAuth();
+  </script>
+</body>
+</html>
